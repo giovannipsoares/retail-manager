@@ -1,7 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.routers import produtos, fornecedores, pedidos, estoque, categorias
-
+from app.routers import produtos, fornecedores, pedidos, estoque, categorias, analises
 app = FastAPI(
     title="RetailManager API",
     description="API de gestão de varejo — produtos, estoque, fornecedores e pedidos.",
@@ -21,7 +20,7 @@ app.include_router(produtos.router,    prefix="/produtos",    tags=["Produtos"])
 app.include_router(estoque.router,     prefix="/estoque",     tags=["Estoque"])
 app.include_router(fornecedores.router,prefix="/fornecedores",tags=["Fornecedores"])
 app.include_router(pedidos.router,     prefix="/pedidos",     tags=["Pedidos"])
-
+app.include_router(analises.router, prefix="/analises", tags=["Análises"])
 
 @app.get("/", tags=["Health"])
 def health_check():
