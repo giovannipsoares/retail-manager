@@ -25,6 +25,7 @@
         <li><a href="#" class="nav-link" data-page="estoque">🗄️ Estoque</a></li>
         <li><a href="#" class="nav-link" data-page="fornecedores">🚚 Fornecedores</a></li>
         <li><a href="#" class="nav-link" data-page="pedidos">🧾 Pedidos</a></li>
+	<li><a href="#" class="nav-link" data-page="analises">📈 Análises</a></li>
       </ul>
     </nav>
 
@@ -159,6 +160,168 @@
         </div>
       </section>
 
+	<!-- 
+  INSTRUÇÕES:
+  1. No index.html, adicione este item ao menu (dentro de <ul class="nav-list">), após o item de Pedidos:
+  
+  <li><a href="#" class="nav-link" data-page="analises">📈 Análises</a></li>
+
+  2. Adicione a seção abaixo dentro de <main class="main-content">, após a section de pedidos.
+  
+  3. No arquivo js/app.js, o módulo "analises" já é detectado automaticamente.
+  
+  4. Adicione a tag <script src="js/analises.js"></script> no index.html antes do </body>.
+  
+  5. Adicione a tag <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> antes dos outros scripts.
+-->
+
+<!-- ── ANÁLISES ── -->
+<section id="page-analises" class="page">
+  <div class="page-header">
+    <h1>Análises</h1>
+    <button class="btn btn-primary" id="btn-importar-csv">📂 Importar CSV de vendas</button>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs" style="display:flex;gap:4px;margin-bottom:1rem;border-bottom:1px solid var(--color-border);padding-bottom:8px">
+    <button id="tab-abc"      class="btn tab-ativa" onclick="analises._ativarTab('abc')">Curva ABC</button>
+    <button id="tab-giro"     class="btn"           onclick="analises._ativarTab('giro')">Giro de Estoque</button>
+    <button id="tab-ruptura"  class="btn"           onclick="analises._ativarTab('ruptura')">Rupturas</button>
+    <button id="tab-sugestao" class="btn"           onclick="analises._ativarTab('sugestao')">Sugestão de Compra</button>
+  </div>
+
+  <!-- ── PAINEL ABC ── -->
+  <div id="painel-abc">
+    <div class="card" style="margin-bottom:1rem">
+      <div class="card-header" style="flex-wrap:wrap;gap:8px">
+        <span style="font-weight:500">Filtros</span>
+        <select id="filtro-abc-base" class="select-sm">
+          <option value="faturamento">Por faturamento</option>
+          <option value="quantidade">Por quantidade</option>
+          <option value="margem">Por margem</option>
+        </select>
+        <select id="filtro-abc-loja"  class="select-sm"><option value="">Todas as lojas</option></select>
+        <select id="filtro-abc-grupo" class="select-sm"><option value="">Todos os grupos</option></select>
+        <select id="filtro-abc-periodo-ini" class="select-sm"><option value="">Período início</option></select>
+        <select id="filtro-abc-periodo-fim" class="select-sm"><option value="">Período fim</option></select>
+        <button class="btn btn-primary" id="btn-gerar-abc">Gerar curva</button>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 340px;gap:1rem;align-items:start">
+      <div class="card">
+        <div class="card-header">
+          <span>Classificação ABC</span>
+          <div id="abc-resumo" style="display:flex;gap:6px;align-items:center"></div>
+        </div>
+        <div class="table-wrap" style="max-height:480px;overflow-y:auto">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th><th>Código</th><th>Produto</th><th>Grupo</th>
+                <th id="abc-label-valor" style="text-align:right">Valor</th>
+                <th style="text-align:right">% Acum.</th><th>Classe</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-abc"><tr><td colspan="7" class="empty">Aplique os filtros e clique em "Gerar curva"</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="card" style="padding:1rem">
+        <p style="font-size:13px;font-weight:500;margin-bottom:8px">Top 30 produtos</p>
+        <canvas id="grafico-abc" height="300"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── PAINEL GIRO ── -->
+  <div id="painel-giro" class="hidden">
+    <div class="card" style="margin-bottom:1rem">
+      <div class="card-header">
+        <span style="font-weight:500">Filtros</span>
+        <select id="filtro-giro-loja" class="select-sm"><option value="">Todas as lojas</option></select>
+        <select id="filtro-giro-meses" class="select-sm">
+          <option value="1">Último mês</option>
+          <option value="3" selected>Últimos 3 meses</option>
+          <option value="6">Últimos 6 meses</option>
+          <option value="12">Último ano</option>
+        </select>
+        <button class="btn btn-primary" id="btn-gerar-giro">Calcular giro</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Código</th><th>Produto</th><th style="text-align:right">Estoque atual</th><th style="text-align:right">Venda média</th><th style="text-align:right">Dias cobertura</th><th>Status</th></tr>
+          </thead>
+          <tbody id="tbody-giro"><tr><td colspan="6" class="empty">Aplique os filtros e clique em "Calcular giro"</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── PAINEL RUPTURA ── -->
+  <div id="painel-ruptura" class="hidden">
+    <div class="card" style="margin-bottom:1rem">
+      <div class="card-header">
+        <span style="font-weight:500">Produtos em ruptura ou estoque crítico</span>
+        <button class="btn btn-primary" id="btn-gerar-ruptura">Atualizar</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>SKU</th><th>Produto</th><th style="text-align:right">Estoque atual</th><th style="text-align:right">Estoque mínimo</th><th>Status</th></tr>
+          </thead>
+          <tbody id="tbody-ruptura"><tr><td colspan="5" class="empty">Clique em "Atualizar" para carregar</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── PAINEL SUGESTÃO ── -->
+  <div id="painel-sugestao" class="hidden">
+    <div class="card" style="margin-bottom:1rem">
+      <div class="card-header" style="flex-wrap:wrap;gap:8px">
+        <span style="font-weight:500">Filtros</span>
+        <select id="filtro-sugestao-loja" class="select-sm"><option value="">Todas as lojas</option></select>
+        <select id="filtro-sugestao-meses" class="select-sm">
+          <option value="1">Última mês</option>
+          <option value="3" selected>Últimos 3 meses</option>
+          <option value="6">Últimos 6 meses</option>
+        </select>
+        <label style="font-size:12px;display:flex;align-items:center;gap:4px">
+          Cobertura alvo (dias):
+          <input type="number" id="filtro-sugestao-cobertura" value="45" min="7" max="180" style="width:60px;padding:4px 8px;border:1px solid var(--color-border);border-radius:6px;font-size:12px" />
+        </label>
+        <button class="btn btn-primary" id="btn-gerar-sugestao">Calcular sugestão</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <span>Produtos sugeridos para compra</span>
+        <span id="sugestao-total" style="font-size:13px;font-weight:500"></span>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Código</th><th>Produto</th><th>Fornecedor</th><th style="text-align:right">Estoque</th><th style="text-align:right">Venda/dia</th><th style="text-align:right">Qtd sugerida</th><th style="text-align:right">Valor est.</th></tr>
+          </thead>
+          <tbody id="tbody-sugestao"><tr><td colspan="7" class="empty">Aplique os filtros e clique em "Calcular sugestão"</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</section>
+
+<style>
+.tab-ativa { background: var(--color-primary) !important; color: #fff !important; border-color: var(--color-primary) !important; }
+.hidden { display: none !important; }
+</style>
+
+
     </main>
   </div>
 
@@ -170,5 +333,7 @@
   <script src="js/pedidos.js"></script>
   <script src="js/dashboard.js"></script>
   <script src="js/app.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="js/analises.js"></script>
 </body>
 </html>
