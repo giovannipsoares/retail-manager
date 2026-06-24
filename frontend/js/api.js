@@ -3,7 +3,7 @@
 
 const API_BASE = window.location.hostname === 'localhost'
   ? 'http://localhost:8000'
-  : 'https://SEU-BACKEND.railway.app';   // ← substituir após deploy
+  : 'https://retail-manager-production-d518.up.railway.app';   // ← substituir após deploy
 
 const api = {
 
