@@ -1,6 +1,6 @@
 // app.js — Inicialização e roteamento da SPA
 
-const modulos = { dashboard, produtos, estoque, fornecedores, pedidos };
+const modulos = { dashboard, produtos, estoque, fornecedores, pedidos, analises };
 const paginasInicializadas = new Set();
 
 async function navegarPara(pagina) {
